@@ -39,15 +39,15 @@ def make_debris (count):
         return_list.append(VertexGeometry(renderer.ctx, lines))
     return return_list
 
-# SND_PEW = pyglet.media.StaticSource(pyglet.media.load(os.path.join(os.getcwd(), 'assets','pew 1.ogg')))
-# SND_SHIELD = pyglet.media.StaticSource(pyglet.media.load(os.path.join(os.getcwd(), 'assets','shield.ogg')))
-# SND_GRIND1 = pyglet.media.StaticSource(pyglet.media.load(os.path.join(os.getcwd(), 'assets','grind 1.ogg')))
-# SND_GRIND2 = pyglet.media.StaticSource(pyglet.media.load(os.path.join(os.getcwd(), 'assets','grind 2.ogg')))
-# SND_ZUB1 = pyglet.media.StaticSource(pyglet.media.load(os.path.join(os.getcwd(), 'assets','zub 1.ogg')))
-# SND_PEW3 = pyglet.media.StaticSource(pyglet.media.load(os.path.join(os.getcwd(), 'assets','pew 3.ogg')))
-# SND_DHHHD = pyglet.media.StaticSource(pyglet.media.load(os.path.join(os.getcwd(), 'assets','dhhhd.ogg')))
-# SND_ENTRANCE = pyglet.media.StaticSource(pyglet.media.load(os.path.join(os.getcwd(), 'assets','entrance.ogg')))
-# SND_GAME_MUSIC = pyglet.media.StaticSource(pyglet.media.load(os.path.join(os.getcwd(), 'assets','imptux-1.ogg')))
+SND_PEW = arcade.load_sound(os.path.join('assets', 'pew 1.ogg'))
+SND_SHIELD = arcade.load_sound(os.path.join('assets', 'shield.ogg'))
+SND_GRIND1 = arcade.load_sound(os.path.join('assets', 'grind 1.ogg'))
+SND_GRIND2 = arcade.load_sound(os.path.join('assets', 'grind 2.ogg'))
+SND_ZUB1 = arcade.load_sound(os.path.join('assets', 'zub 1.ogg'))
+SND_PEW3 = arcade.load_sound(os.path.join('assets', 'pew 3.ogg'))
+SND_DHHHD = arcade.load_sound(os.path.join('assets', 'dhhhd.ogg'))
+SND_ENTRANCE = arcade.load_sound(os.path.join('assets', 'entrance.ogg'))
+SND_GAME_MUSIC = arcade.load_sound(os.path.join('assets', 'imptux-1.ogg'))
 
 PLAYER_VERTEX_LIST = (-50.0, 10.000002, 0.0, 50.0, 10.000002, 0.0, 50.0, 10.000002, 0.0, 50.0, -9.999998, 0.0, 50.0, -9.999998, 0.0, -50.0, -9.999998, 0.0, -50.0, -9.999998, 0.0, -50.0, 10.000002, 0.0, 50.0, -9.999998, 0.0, 50.0, 10.000002, 0.0, 50.0, 10.000002, 0.0, 0.0, -2e-06, -100.0, 0.0, -2e-06, -100.0, 50.0, -9.999998, 0.0, 50.0, 10.000002, 0.0, -50.0, 10.000002, 0.0, -50.0, 10.000002, 0.0, 0.0, -2e-06, -100.0, 0.0, -2e-06, -100.0, 50.0, 10.000002, 0.0, -50.0, 10.000002, 0.0, -50.0, -9.999998, 0.0, -50.0, -9.999998, 0.0, 0.0, -2e-06, -100.0, 0.0, -2e-06, -100.0, -50.0, 10.000002, 0.0, -50.0, -9.999998, 0.0, 50.0, -9.999998, 0.0, 50.0, -9.999998, 0.0, 0.0, -2e-06, -100.0, 0.0, -2e-06, -100.0, -50.0, -9.999998, 0.0)
 TERRAIN_VERTEX_LIST = (-400, 30, -2000, -330, 30, -2000, -330, 30, -2000, -330, 30, 0, -330, 30, 0, -400, 30, 0, -400, 30, 0, -400, 30, -2000, -330, 30, -2000, -324.956177, 29.579521, -2000, -324.956177, 29.579521, -2000, -324.956177, 29.579521, 0, -324.956177, 29.579521, 0, -330, 30, 0, -330, 30, 0, -330, 30, -2000, -324.956177, 29.579521, -2000, -319.409271, 28.364159, -2000, -319.409271, 28.364159, -2000, -319.409271, 28.364159, 0, -319.409271, 28.364159, 0, -324.956177, 29.579521, 0, -324.956177, 29.579521, 0, -324.956177, 29.579521, -2000, -319.409271, 28.364159, -2000, -310.095367, 25.20192, -2000, -310.095367, 25.20192, -2000, -310.095367, 25.20192, 0, -310.095367, 25.20192, 0, -319.409271, 28.364159, 0, -319.409271, 28.364159, 0, -319.409271, 28.364159, -2000, -310.095367, 25.20192, -2000, -283.322876, 12.78336, -2000, -283.322876, 12.78336, -2000, -283.322876, 12.78336, 0, -283.322876, 12.78336, 0, -310.095367, 25.20192, 0, -310.095367, 25.20192, 0, -310.095367, 25.20192, -2000, -283.322876, 12.78336, -2000, -205.223038, -23.061121, -2000, -205.223038, -23.061121, -2000, -205.223038, -23.061121, 0, -205.223038, -23.061121, 0, -283.322876, 12.78336, 0, -283.322876, 12.78336, 0, -283.322876, 12.78336, -2000, -205.223038, -23.061121, -2000, -160.174072, -38.25024, -2000, -160.174072, -38.25024, -2000, -160.174072, -38.25024, 0, -160.174072, -38.25024, 0, -205.223038, -23.061121, 0, -205.223038, -23.061121, 0, -205.223038, -23.061121, -2000, -160.174072, -38.25024, -2000, -107.280006, -50.640003, -2000, -107.280006, -50.640003, -2000, -107.280006, -50.640003, 0, -107.280006, -50.640003, 0, -160.174072, -38.25024, 0, -160.174072, -38.25024, 0, -160.174072, -38.25024, -2000, -107.280006, -50.640003, -2000, -56.760002, -57.48, -2000, -56.760002, -57.48, -2000, -56.760002, -57.48, 0, -56.760002, -57.48, 0, -107.280006, -50.640003, 0, -107.280006, -50.640003, 0, -107.280006, -50.640003, -2000, -56.760002, -57.48, -2000, 0, -60, -2000, 0, -60, -2000, 0, -60, 0, 0, -60, 0, -56.760002, -57.48, 0, -56.760002, -57.48, 0, -56.760002, -57.48, -2000, 0, -60, -2000, 56.400002, -57.48, -2000, 56.400002, -57.48, -2000, 56.400002, -57.48, 0, 56.400002, -57.48, 0, 0, -60, 0, 0, -60, 0, 0, -60, -2000, 56.400002, -57.48, -2000, 106.000008, -50.640003, -2000, 106.000008, -50.640003, -2000, 106.000008, -50.640003, 0, 106.000008, -50.640003, 0, 56.400002, -57.48, 0, 56.400002, -57.48, 0, 56.400002, -57.48, -2000, 106.000008, -50.640003, -2000, 149.400009, -40.559998, -2000, 149.400009, -40.559998, -2000, 149.400009, -40.559998, 0, 149.400009, -40.559998, 0, 106.000008, -50.640003, 0, 106.000008, -50.640003, 0, 106.000008, -50.640003, -2000, 149.400009, -40.559998, -2000, 194.140793, -25.70784, -2000, 194.140793, -25.70784, -2000, 194.140793, -25.70784, 0, 194.140793, -25.70784, 0, 149.400009, -40.559998, 0, 149.400009, -40.559998, 0, 149.400009, -40.559998, -2000, 194.140793, -25.70784, -2000, 248.400009, -1.68, -2000, 248.400009, -1.68, -2000, 248.400009, -1.68, 0, 248.400009, -1.68, 0, 194.140793, -25.70784, 0, 194.140793, -25.70784, 0, 194.140793, -25.70784, -2000, 248.400009, -1.68, -2000, 302.198395, 23.825281, -2000, 302.198395, 23.825281, -2000, 302.198395, 23.825281, 0, 302.198395, 23.825281, 0, 248.400009, -1.68, 0, 248.400009, -1.68, 0, 248.400009, -1.68, -2000, 302.198395, 23.825281, -2000, 313.200012, 27.48, -2000, 313.200012, 27.48, -2000, 313.200012, 27.48, 0, 313.200012, 27.48, 0, 302.198395, 23.825281, 0, 302.198395, 23.825281, 0, 302.198395, 23.825281, -2000, 313.200012, 27.48, -2000, 320.126404, 29.066881, -2000, 320.126404, 29.066881, -2000, 320.126404, 29.066881, 0, 320.126404, 29.066881, 0, 313.200012, 27.48, 0, 313.200012, 27.48, 0, 313.200012, 27.48, -2000, 320.126404, 29.066881, -2000, 323.481598, 29.579521, -2000, 323.481598, 29.579521, -2000, 323.481598, 29.579521, 0, 323.481598, 29.579521, 0, 320.126404, 29.066881, 0, 320.126404, 29.066881, 0, 320.126404, 29.066881, -2000, 323.481598, 29.579521, -2000, 330, 30, -2000, 330, 30, -2000, 330, 30, 0, 330, 30, 0, 323.481598, 29.579521, 0, 323.481598, 29.579521, 0, 323.481598, 29.579521, -2000, 330, 30, -2000, 400, 30, -2000, 400, 30, -2000, 400, 30, 0, 400, 30, 0, 330, 30, 0, 330, 30, 0, 330, 30, -2000)
@@ -242,7 +242,7 @@ class Player (object):
             renderer.draw(random.choice(self.debris))
             if self.new_grind:
                 self.new_grind = False
-                # SND_GRIND2 will be played here
+                arcade.play_sound(SND_GRIND2)
         else:
             self.new_grind = True
 
@@ -294,23 +294,23 @@ class Player (object):
     def fire (self, now, mode=0):
         if mode == 0 and now > self.timestamp_a:
             self.timestamp_a = now + 0.1 + (self.weapon_a_cooldown/100.0)
-            # SND_PEW.play()
+            arcade.play_sound(SND_PEW)
             return (PlayerBulletModel(self.x-12, self.y, self.z+5, 5),PlayerBulletModel(self.x+12, self.y, self.z+5, -5))
         elif mode == 1 and now > self.timestamp_b:
             self.timestamp_b = now + 0.15 + (self.weapon_b_cooldown/100.0)
-            # SND_PEW3.play()
+            arcade.play_sound(SND_PEW3)
             return (
                 PlayerBulletModelSpecial(self.x-25, self.y, self.z+15, 5),
                 PlayerBulletModelSpecial(self.x+25, self.y, self.z+15, -5))
         return None
     
     def collision_entity (self, entity):
-        # SND_SHIELD.play()
+        arcade.play_sound(SND_SHIELD)
         self.health -= 15
         self.c = 1
 
     def collision_entity_munition (self, entity_munition):
-        # SND_SHIELD.play()
+        arcade.play_sound(SND_SHIELD)
         self.health -= entity_munition.strength
         self.c = 1.5
 
@@ -426,7 +426,7 @@ class PayloadMunition (object):
         self.strength = PAYLOAD_MUNITION_STRENGTH
         self.boundsz = 0
         self.active = True
-        # SND_DHHHD.play()
+        arcade.play_sound(SND_DHHHD)
         self.update()
         
     def update (self, dt=0, now=0):
@@ -478,7 +478,7 @@ class PayloadDrone (object):
         self.fire_delay = 0.3
         self.dispatch_callback = dispatch_callback
         self.c = 0
-        # SND_ENTRANCE.play()
+        arcade.play_sound(SND_ENTRANCE)
         self.update()
         
     def update (self, dt=0, now=0):
@@ -494,8 +494,7 @@ class PayloadDrone (object):
         if self.fire_timestamp < now:
             self.fire_timestamp = now + self.fire_delay
             xoff = (self.step/4.0) * 100 - 50
-            #~ SND_ZUB1.volume = 0.2
-            #~ SND_ZUB1.play()
+            arcade.play_sound(SND_ZUB1)
             self.dispatch_callback([PayloadMunition(self.x+xoff, self.y, self.z+150, xoff)])
             self.step += 1
             if self.step > 6:
@@ -737,7 +736,8 @@ class GameView(arcade.View):
             self.dispatch_entity_munitions_callback,
         )
         self.notify(self.current_level.label)
-        self.toggle_game_music(not DEBUG)
+        if not hasattr(self, 'music_player') or self.music_player is None:
+            self.toggle_game_music(not DEBUG)
 
     def dispatch_entities_callback(self, entities):
         self.collision_entities.extend(entities)
@@ -863,9 +863,12 @@ class GameView(arcade.View):
         if not hasattr(self, 'music_player'):
             self.music_player = None
         if self.playing_music:
-            pass
+            if self.music_player is None:
+                self.music_player = arcade.play_sound(SND_GAME_MUSIC, looping=True)
         else:
-            pass
+            if self.music_player is not None:
+                arcade.stop_sound(self.music_player)
+                self.music_player = None
 
     def on_draw(self):
         self.clear()
