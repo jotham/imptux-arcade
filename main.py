@@ -983,7 +983,14 @@ class GameView(arcade.View):
 
     def on_resize(self, width, height):
         super().on_resize(width, height)
-        self.camera.defaultView(width, height)
+        if hasattr(self, 'camera'):
+            self.camera.defaultView(width, height)
+        if hasattr(self, 'score_label'):
+            self.score_label.x = width - 10
+            self.score_label.y = height - 60
+            self.health_label.y = height - 60
+            self.notification_label.x = width // 2
+            self.notification_label.y = height // 2
 
     def on_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
         if not modifiers & arcade.key.MOD_ALT:
