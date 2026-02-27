@@ -1,4 +1,5 @@
-import pyglet, models
+import pyglet
+from . import models
 from pyglet import gl
 import ctypes
 
@@ -66,7 +67,7 @@ class Border (object):
     def __init__ (self, width, height, color=(1.,1.,1.)):
         self.color = color
         points = [0,0,0,0,height,0,0,height,0,width,height,0,width,height,0,width,0,0,width,0,0,0,0,0]
-        for n in xrange(len(points)/3):
+        for n in range(len(points)//3):
             points[n*3] += width/-2
             points[n*3+1] += height/-2
         self.vertex_list = pyglet.graphics.vertex_list(8,('v3f/static', points))

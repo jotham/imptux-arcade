@@ -1,33 +1,14 @@
-#!which `python`
+#!/usr/bin/env python3
 
 import imptux, pyglet, time, math, random, platform, os
 import imptux.models
 from pyglet import gl
-from pyglet.event import EventDispatcher
-# from distutils.version import LooseVersion
-# from imptux import joystick
-
-import ctypes
-
-def xrange(x):
-    return range(x)
-    
-#~ try:
-    #~ ctypes.util.find_library(os.path.join(os.getcwd(),'imptux', 'avbin.dll'))
-#~ except Exception, e:
-    #~ print e
-
-#~ GPROFILER_ERROR = None
-#~ try:
-    #~ from imptux import profiler
-#~ except ImportError, e:
-    #~ GPROFILER_ERROR = e
 
 # generate displacement map for terrain cage
 displacement_resolution = 1024
 displacement_resolution_ = displacement_resolution - 1
 displacement_map = []
-for n in xrange(displacement_resolution):
+for n in range(displacement_resolution):
     angle = math.pi * 1.33 + n/float(displacement_resolution) * math.pi/2.9
     displacement_map.append(((angle-math.pi/2)*180/math.pi, 600*math.cos(angle), 600*math.sin(angle)+358))
 def get_displacement (n):
@@ -36,7 +17,7 @@ def get_displacement (n):
 
 def prepare (xo,yo,zo,xs,ys,zs,v):
     return_list = []
-    for n in xrange(int(len(v)/3)):
+    for n in range(int(len(v)/3)):
         return_list.extend([xo+v[n*3]*xs,yo+v[n*3+1]*ys,zo+v[n*3+2]*zs])
     return return_list
   
@@ -46,9 +27,9 @@ def make_debris (count):
     offsetz = 35
     length = 25
     return_list = []
-    for n in xrange(count):
+    for n in range(count):
         lines = []
-        for line in xrange(5):
+        for line in range(5):
             x = spreadx*(random.random()-0.5)
             y = 0
             z = offsetz+spreadz*(random.random()-0.5)
@@ -102,7 +83,7 @@ class Terrain (object):
         self.z = z
         pillar_count = 8
         spacing = 800
-        self.pillars = [TerrainPillarPair(0,-200,n*-spacing, -spacing*pillar_count) for n in xrange(pillar_count)]
+        self.pillars = [TerrainPillarPair(0,-200,n*-spacing, -spacing*pillar_count) for n in range(pillar_count)]
         
     def update (self, dt):
         for pillar in self.pillars:
@@ -617,8 +598,8 @@ class LevelOne (object):
         self.drone_timestamp = now + self.drone_period
         if self.mode == 0:
             count = 6.0
-            self.dispatch_callback([EncrypterDrone(n*-100, -200, -2400 + n*-50, 600, n/count*-math.pi/2, math.pi/4, 200, now+n*.35, make_fire_probability(0.2), self.dispatch_entity_munitions_callback) for n in xrange(int(count))])
-            self.dispatch_callback([EncrypterDrone(n*-100, -200, -2465 + n*-50, 600,(n/count*-math.pi/2)+math.pi, math.pi/4, 200, now+n*.35, make_fire_probability(0.2), self.dispatch_entity_munitions_callback) for n in xrange(int(count))])
+            self.dispatch_callback([EncrypterDrone(n*-100, -200, -2400 + n*-50, 600, n/count*-math.pi/2, math.pi/4, 200, now+n*.35, make_fire_probability(0.2), self.dispatch_entity_munitions_callback) for n in range(int(count))])
+            self.dispatch_callback([EncrypterDrone(n*-100, -200, -2465 + n*-50, 600,(n/count*-math.pi/2)+math.pi, math.pi/4, 200, now+n*.35, make_fire_probability(0.2), self.dispatch_entity_munitions_callback) for n in range(int(count))])
             self.wave_counter += 1
             if self.wave_counter > 6:
                 self.mode = 1
@@ -626,11 +607,11 @@ class LevelOne (object):
                 print(self.mode)
         elif self.mode == 1:
             count = 3.0 
-            self.dispatch_callback([EncrypterDrone(n*-100, -200, -2400 + n*-60, 600, n/count*-math.pi/2, math.pi/2, 200, 1+now+n*.35, 1.5*(n+1)/count, self.dispatch_entity_munitions_callback) for n in xrange(int(count))])
-            self.dispatch_callback([EncrypterDrone(n*-100, -200, -2600 + n*-60, 600, n/count*-math.pi/2, math.pi/2, 50, now+n*.35, (1.5+(n+1)/count)*2, self.dispatch_entity_munitions_callback) for n in xrange(int(count))])
-            self.dispatch_callback([EncrypterDrone(n*-100, -200, -2765 + n*-60, 600, n/count*-math.pi/2, math.pi/2, -50, now+n*.35, (1.5+(n+1)/count)*2, self.dispatch_entity_munitions_callback) for n in xrange(int(count))])
-            self.dispatch_callback([EncrypterDrone(n*-100, -200, -2165 + n*-60, 600, (n/count*-math.pi/2)+math.pi, math.pi/2, 200, 1+now+n*.35, 1.5*(n+1)/count, self.dispatch_entity_munitions_callback) for n in xrange(int(count))])
-            self.dispatch_entity_munitions_callback([EncryptionMunition(50*(n/6.0 - 0.5), -200, -2000, 50*(n/6.0 - 0.5)) for n in xrange(6)])
+            self.dispatch_callback([EncrypterDrone(n*-100, -200, -2400 + n*-60, 600, n/count*-math.pi/2, math.pi/2, 200, 1+now+n*.35, 1.5*(n+1)/count, self.dispatch_entity_munitions_callback) for n in range(int(count))])
+            self.dispatch_callback([EncrypterDrone(n*-100, -200, -2600 + n*-60, 600, n/count*-math.pi/2, math.pi/2, 50, now+n*.35, (1.5+(n+1)/count)*2, self.dispatch_entity_munitions_callback) for n in range(int(count))])
+            self.dispatch_callback([EncrypterDrone(n*-100, -200, -2765 + n*-60, 600, n/count*-math.pi/2, math.pi/2, -50, now+n*.35, (1.5+(n+1)/count)*2, self.dispatch_entity_munitions_callback) for n in range(int(count))])
+            self.dispatch_callback([EncrypterDrone(n*-100, -200, -2165 + n*-60, 600, (n/count*-math.pi/2)+math.pi, math.pi/2, 200, 1+now+n*.35, 1.5*(n+1)/count, self.dispatch_entity_munitions_callback) for n in range(int(count))])
+            self.dispatch_entity_munitions_callback([EncryptionMunition(50*(n/6.0 - 0.5), -200, -2000, 50*(n/6.0 - 0.5)) for n in range(6)])
             self.wave_counter += 1
             if self.wave_counter > 6:
                 self.mode = 2
@@ -638,8 +619,8 @@ class LevelOne (object):
                 print(self.mode)
         elif self.mode == 2:
             count = 6.0
-            self.dispatch_callback([EncrypterDrone(n*-100, -200, -2400 + n*-110, 600, n/count*-math.pi/2, math.pi/2, 200, now+n*.35, make_fire_probability(0.1, (0.25,1.0)), self.dispatch_entity_munitions_callback) for n in xrange(int(count))])
-            self.dispatch_callback([EncrypterDrone(n*-100, -200, -2465 + n*-110, 600, (n/count*-math.pi/2)+math.pi, math.pi/2, 200, now+n*.35, make_fire_probability(0.1, (0.25,1.0)), self.dispatch_entity_munitions_callback) for n in xrange(int(count))])
+            self.dispatch_callback([EncrypterDrone(n*-100, -200, -2400 + n*-110, 600, n/count*-math.pi/2, math.pi/2, 200, now+n*.35, make_fire_probability(0.1, (0.25,1.0)), self.dispatch_entity_munitions_callback) for n in range(int(count))])
+            self.dispatch_callback([EncrypterDrone(n*-100, -200, -2465 + n*-110, 600, (n/count*-math.pi/2)+math.pi, math.pi/2, 200, now+n*.35, make_fire_probability(0.1, (0.25,1.0)), self.dispatch_entity_munitions_callback) for n in range(int(count))])
             self.wave_counter += 1
             if self.wave_counter > 6:
                 self.mode = 3
@@ -647,16 +628,16 @@ class LevelOne (object):
                 print(self.mode)
         elif self.mode == 3:
             count = 4.0
-            self.dispatch_callback([EncrypterDrone(n*-100, -200, -2400 + n*-110, 600, n/count*-math.pi/2, math.pi/2, 200, now+n*.35, 0, self.dispatch_entity_munitions_callback) for n in xrange(int(count))])
-            self.dispatch_callback([EncrypterDrone(n*-100, -200, -2465 + n*-110, 600, (n/count*-math.pi/2)+math.pi, math.pi/2, 200, now+n*.35, 0, self.dispatch_entity_munitions_callback) for n in xrange(int(count))])
+            self.dispatch_callback([EncrypterDrone(n*-100, -200, -2400 + n*-110, 600, n/count*-math.pi/2, math.pi/2, 200, now+n*.35, 0, self.dispatch_entity_munitions_callback) for n in range(int(count))])
+            self.dispatch_callback([EncrypterDrone(n*-100, -200, -2465 + n*-110, 600, (n/count*-math.pi/2)+math.pi, math.pi/2, 200, now+n*.35, 0, self.dispatch_entity_munitions_callback) for n in range(int(count))])
             self.payload = PayloadDrone(0, -200, -8000, 0, 0, 1, self.dispatch_entity_munitions_callback)
             self.wave_counter += 1
             self.dispatch_b_callback([self.payload])
             self.mode = 4
         elif self.mode == 4:
             count = 2.0
-            self.dispatch_callback([EncrypterDrone(n*-100, -200, -2400 + n*-110, 600, n/count*-math.pi/2, math.pi/2, 200, now+n*.35, 0, self.dispatch_entity_munitions_callback) for n in xrange(int(count))])
-            self.dispatch_callback([EncrypterDrone(n*-100, -200, -2465 + n*-110, 600, (n/count*-math.pi/2)+math.pi, math.pi/2, 200, now+n*.35, 0, self.dispatch_entity_munitions_callback) for n in xrange(int(count))])
+            self.dispatch_callback([EncrypterDrone(n*-100, -200, -2400 + n*-110, 600, n/count*-math.pi/2, math.pi/2, 200, now+n*.35, 0, self.dispatch_entity_munitions_callback) for n in range(int(count))])
+            self.dispatch_callback([EncrypterDrone(n*-100, -200, -2465 + n*-110, 600, (n/count*-math.pi/2)+math.pi, math.pi/2, 200, now+n*.35, 0, self.dispatch_entity_munitions_callback) for n in range(int(count))])
             self.wave_counter += 1
             if not self.payload and self.wave_counter > 18:
                 self.mode = 5
@@ -664,11 +645,11 @@ class LevelOne (object):
                 print(self.mode)
         elif self.mode == 5:
             count = 4.0
-            self.dispatch_callback([EncrypterDrone(n*-100, -200, -2400 + n*-110, 600, n/count*-math.pi/2, math.pi/2, 200, now+n*.35, make_fire_probability(0.09, (0.09,1.0,0.1)), self.dispatch_entity_munitions_callback) for n in xrange(int(count))])
-            self.dispatch_callback([EncrypterDrone(n*-100, -200, -2465 + n*-110, 600, (n/count*-math.pi/2)+math.pi, math.pi/2, 200, now+n*.35, make_fire_probability(0.09, (0.25,1.0,0.1)), self.dispatch_entity_munitions_callback) for n in xrange(int(count))])
-            self.dispatch_entity_munitions_callback([EncryptionMunition(20*(n/6.0 - 0.5), -200, -2000, 70*(n/6.0 - 0.5)) for n in xrange(6)])
+            self.dispatch_callback([EncrypterDrone(n*-100, -200, -2400 + n*-110, 600, n/count*-math.pi/2, math.pi/2, 200, now+n*.35, make_fire_probability(0.09, (0.09,1.0,0.1)), self.dispatch_entity_munitions_callback) for n in range(int(count))])
+            self.dispatch_callback([EncrypterDrone(n*-100, -200, -2465 + n*-110, 600, (n/count*-math.pi/2)+math.pi, math.pi/2, 200, now+n*.35, make_fire_probability(0.09, (0.25,1.0,0.1)), self.dispatch_entity_munitions_callback) for n in range(int(count))])
+            self.dispatch_entity_munitions_callback([EncryptionMunition(20*(n/6.0 - 0.5), -200, -2000, 70*(n/6.0 - 0.5)) for n in range(6)])
             if random.random() < 0.2:
-                self.dispatch_entity_munitions_callback([PayloadMunition(400*(n/5.0 - 0.5), -200, -2000+random.random()*500, 100*(n/6.0 - 0.5)) for n in xrange(5)])
+                self.dispatch_entity_munitions_callback([PayloadMunition(400*(n/5.0 - 0.5), -200, -2000+random.random()*500, 100*(n/6.0 - 0.5)) for n in range(5)])
             self.wave_counter += 1
             if self.wave_counter > 8:
                 self.mode = 6
@@ -677,10 +658,10 @@ class LevelOne (object):
         elif self.mode == 6:
             #~ x, y, z, phase_offset, phase_rate, phase_amplitude, appear_delay, fire_cycle, dispatch_callback
             count = 8.0
-            self.dispatch_callback([EncrypterDrone(n*-100, -200, -2400 + n*-110, 600, n/count*-math.pi/4.0, math.pi/8.0, 100, now+n*0.2, 0, self.dispatch_entity_munitions_callback) for n in xrange(int(count))])
+            self.dispatch_callback([EncrypterDrone(n*-100, -200, -2400 + n*-110, 600, n/count*-math.pi/4.0, math.pi/8.0, 100, now+n*0.2, 0, self.dispatch_entity_munitions_callback) for n in range(int(count))])
             count = 3.0
-            self.dispatch_callback([EncrypterDrone(n*-100, -200, -2300 + n*-110, 700, n/count*-math.pi/4.0, math.pi/2.0, -190, now+n*0.2, 0.5+(n/count*0.5), self.dispatch_entity_munitions_callback) for n in xrange(int(count))])
-            self.dispatch_entity_munitions_callback([EncryptionMunition(20*(n/6.0 - 0.5), -200, -2500+(n*100), 48+random.randrange(5)) for n in xrange(6)])
+            self.dispatch_callback([EncrypterDrone(n*-100, -200, -2300 + n*-110, 700, n/count*-math.pi/4.0, math.pi/2.0, -190, now+n*0.2, 0.5+(n/count*0.5), self.dispatch_entity_munitions_callback) for n in range(int(count))])
+            self.dispatch_entity_munitions_callback([EncryptionMunition(20*(n/6.0 - 0.5), -200, -2500+(n*100), 48+random.randrange(5)) for n in range(6)])
             self.wave_counter += 1
             if self.wave_counter > 4:
                 self.mode = 7
@@ -689,10 +670,10 @@ class LevelOne (object):
         elif self.mode == 7:
             #~ x, y, z, phase_offset, phase_rate, phase_amplitude, appear_delay, fire_cycle, dispatch_callback
             count = 8.0
-            self.dispatch_callback([EncrypterDrone(n*-100, -200, -2400 + n*-110, 600, n/count*-math.pi/4.0, math.pi/8.0, -100, now+n*0.2, 0, self.dispatch_entity_munitions_callback) for n in xrange(int(count))])
+            self.dispatch_callback([EncrypterDrone(n*-100, -200, -2400 + n*-110, 600, n/count*-math.pi/4.0, math.pi/8.0, -100, now+n*0.2, 0, self.dispatch_entity_munitions_callback) for n in range(int(count))])
             count = 3.0
-            self.dispatch_callback([EncrypterDrone(n*-100, -200, -2300 + n*-110, 700, n/count*-math.pi/4.0, math.pi/2.0, 190, now+n*0.2, 0.5+(n/count*0.5), self.dispatch_entity_munitions_callback) for n in xrange(int(count))])
-            self.dispatch_entity_munitions_callback([EncryptionMunition(20*(n/6.0 - 0.5), -200, -2500+(n*100), -48-random.randrange(5)) for n in xrange(6)])
+            self.dispatch_callback([EncrypterDrone(n*-100, -200, -2300 + n*-110, 700, n/count*-math.pi/4.0, math.pi/2.0, 190, now+n*0.2, 0.5+(n/count*0.5), self.dispatch_entity_munitions_callback) for n in range(int(count))])
+            self.dispatch_entity_munitions_callback([EncryptionMunition(20*(n/6.0 - 0.5), -200, -2500+(n*100), -48-random.randrange(5)) for n in range(6)])
             self.wave_counter += 1
             if self.wave_counter > 4:
                 self.mode = 0
