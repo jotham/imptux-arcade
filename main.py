@@ -3,7 +3,7 @@
 import imptux, time, math, random, os
 import imptux.models
 import arcade
-from pyglet import gl
+from imptux.renderer import renderer, VertexGeometry
 
 # generate displacement map for terrain cage
 displacement_resolution = 1024
@@ -36,7 +36,7 @@ def make_debris (count):
             z = offsetz+spreadz*(random.random()-0.5)
             len = random.randrange(length)+2
             lines.extend([x,y,z,x,y,z+len])
-        return_list.append(pyglet.graphics.vertex_list(10,('v3f/static', lines)))
+        return_list.append(VertexGeometry(renderer.ctx, lines))
     return return_list
 
 # SND_PEW = pyglet.media.StaticSource(pyglet.media.load(os.path.join(os.getcwd(), 'assets','pew 1.ogg')))
@@ -75,34 +75,30 @@ PAYLOAD_HEALTH = 50
 PLAYER_HEALTH = 100
 
 class Terrain (object):
-    model = pyglet.graphics.vertex_list(168,('v3f/static', prepare(0,0,0,1,1,4,TERRAIN_VERTEX_LIST)))
-    #~ model = pyglet.graphics.vertex_list(320,('v3f/static', TERRAIN_VERTEX_LIST_2))
-    
     def __init__ (self, x, y, z):
         self.x = x
         self.y = y
         self.z = z
+        self.model = VertexGeometry(renderer.ctx, prepare(0,0,0,1,1,4,TERRAIN_VERTEX_LIST))
         pillar_count = 8
         spacing = 800
         self.pillars = [TerrainPillarPair(0,-200,n*-spacing, -spacing*pillar_count) for n in range(pillar_count)]
-        
+
     def update (self, dt):
         for pillar in self.pillars:
             pillar.update(dt)
         return True
-    
+
     def draw (self):
-        gl.glColor3f(0.38, 0, 0)
-        gl.glPushMatrix()
-        gl.glTranslatef(self.x, self.y, self.z)
-        self.model.draw(gl.GL_LINES)
-        gl.glPopMatrix()
+        renderer.set_color(0.38, 0, 0)
+        renderer.matrix_stack.push()
+        renderer.matrix_stack.translate(self.x, self.y, self.z)
+        renderer.draw(self.model)
+        renderer.matrix_stack.pop()
         for pillar in self.pillars:
             pillar.draw()
 
 class TerrainPillarPair (object):
-    model = pyglet.graphics.vertex_list(312*2,('v3f/static', PILLAR_PAIR))
-    
     def __init__ (self, x, y, z, boundsz):
         self.x = x
         self.y = y
@@ -110,26 +106,26 @@ class TerrainPillarPair (object):
         self.vz = 2000
         self.boundsz = boundsz
         self.hidden = random.random() < 0.5
-        
+        self.model = VertexGeometry(renderer.ctx, PILLAR_PAIR)
+
     def update (self, dt):
         self.z += self.vz * dt
         if self.z >= 0:
             self.z = self.boundsz+self.z
             self.hidden = random.random() < 0.5
         return True
-    
+
     def draw (self):
         if self.hidden: return
-        gl.glColor3f(0.38, 0, 0)
-        gl.glPushMatrix()
-        gl.glTranslatef(self.x, self.y, self.z)
-        self.model.draw(gl.GL_LINES)
-        gl.glPopMatrix()
+        renderer.set_color(0.38, 0, 0)
+        renderer.matrix_stack.push()
+        renderer.matrix_stack.translate(self.x, self.y, self.z)
+        renderer.draw(self.model)
+        renderer.matrix_stack.pop()
 
 class PlayerBulletModel (object):
-    model = pyglet.graphics.vertex_list(6, ('v3f/static', prepare(0,0,0,0.5,0.5,0.5,PLAYER_BULLET_VERTEX_LIST)))
-    
     def __init__ (self, x, y, z, vx=0, vz=-650):
+        self.model = VertexGeometry(renderer.ctx, prepare(0,0,0,0.5,0.5,0.5,PLAYER_BULLET_VERTEX_LIST))
         self.x = x
         self.y = y
         self.z = z
@@ -158,18 +154,17 @@ class PlayerBulletModel (object):
         self.active = False
         
     def draw (self):
-        gl.glColor3f(1, 0.8, 0)
-        gl.glPushMatrix()
-        gl.glTranslatef(self.virtual_x, self.virtual_y, self.z)
-        gl.glRotatef(self.virtual_rz+self.rz,0,0,1)
-        self.model.draw(gl.GL_LINES)
-        gl.glPopMatrix()
+        renderer.set_color(1, 0.8, 0)
+        renderer.matrix_stack.push()
+        renderer.matrix_stack.translate(self.virtual_x, self.virtual_y, self.z)
+        renderer.matrix_stack.rotate(self.virtual_rz+self.rz, 0, 0, 1)
+        renderer.draw(self.model)
+        renderer.matrix_stack.pop()
 
 class PlayerBulletModelSpecial (object):
     # TODO: FIX BOUNDING BOX FOR THIS MUNITION
-    model = pyglet.graphics.vertex_list(6, ('v3f/static', prepare(0,0,0,0.5,0.5,5,PLAYER_BULLET_VERTEX_LIST)))
-    
     def __init__ (self, x, y, z, vx=0, vz=-650):
+        self.model = VertexGeometry(renderer.ctx, prepare(0,0,0,0.5,0.5,5,PLAYER_BULLET_VERTEX_LIST))
         self.x = x
         self.y = y
         self.z = z
@@ -201,22 +196,18 @@ class PlayerBulletModelSpecial (object):
         
     def draw (self):
         b = random.random()*0.6
-        gl.glColor3f(b, b, 1.0)
-        gl.glPushMatrix()
-        gl.glTranslatef(self.virtual_x, self.virtual_y, self.z)
-        gl.glRotatef(self.virtual_rz+self.rz,0,0,1)
-        self.model.draw(gl.GL_LINES)
-        gl.glPopMatrix()
-      
+        renderer.set_color(b, b, 1.0)
+        renderer.matrix_stack.push()
+        renderer.matrix_stack.translate(self.virtual_x, self.virtual_y, self.z)
+        renderer.matrix_stack.rotate(self.virtual_rz+self.rz, 0, 0, 1)
+        renderer.draw(self.model)
+        renderer.matrix_stack.pop()
+
 class Player (object):
-    #~ model = pyglet.graphics.vertex_list(32,('v3f/static', prepare(0,0,0,0.5,0.5,0.5, PLAYER_VERTEX_LIST)))
-    model = pyglet.graphics.vertex_list(164,('v3f/static', PLAYER_SHIP_2))
-    shield = pyglet.graphics.vertex_list(120,('v3f/static', PLAYER_SHIELD))
-    debris = make_debris(5)
-    
-    # sound_player = pyglet.media.Player()
-    
     def __init__ (self, x, y, z):
+        self.model = VertexGeometry(renderer.ctx, PLAYER_SHIP_2)
+        self.shield = VertexGeometry(renderer.ctx, PLAYER_SHIELD)
+        self.debris = make_debris(5)
         self.x = x
         self.y = y
         self.z = z
@@ -241,32 +232,27 @@ class Player (object):
         self.update()
         
     def draw (self):
-        gl.glPushMatrix()
-        gl.glTranslatef(self.virtual_x, self.virtual_y+self.yoffset, self.z)
-        gl.glRotatef(self.virtual_rz,0,0,1)
-        
+        renderer.matrix_stack.push()
+        renderer.matrix_stack.translate(self.virtual_x, self.virtual_y+self.yoffset, self.z)
+        renderer.matrix_stack.rotate(self.virtual_rz, 0, 0, 1)
+
         if self.x < -180 or self.x > 180:
-            # random lines
             c = random.random()
-            gl.glColor3f(1.0*c, 1.0 *c, 0)
-            random.choice(self.debris).draw(gl.GL_LINES)
+            renderer.set_color(1.0*c, 1.0*c, 0)
+            renderer.draw(random.choice(self.debris))
             if self.new_grind:
                 self.new_grind = False
-                # SND_GRIND2.play()
-                #~ self.sound_player.queue(SND_GRIND2)
-                #~ self.sound_player.next()
-                #~ self.sound_player.play()
-                # queue sound
+                # SND_GRIND2 will be played here
         else:
             self.new_grind = True
-        
+
         if self.c > 0.5:
             c2 = self.c/2.0
-            gl.glColor3f(c2*0.5,c2*0.5, c2*2)
-            self.shield.draw(gl.GL_LINES)
-        gl.glColor3f(0.2+.8*self.c, 0.7+-.5*self.c, 0)
-        self.model.draw(gl.GL_LINES)
-        gl.glPopMatrix()
+            renderer.set_color(c2*0.5, c2*0.5, c2*2)
+            renderer.draw(self.shield)
+        renderer.set_color(0.2+.8*self.c, 0.7+-.5*self.c, 0)
+        renderer.draw(self.model)
+        renderer.matrix_stack.pop()
     
     def update (self, dt=0, now=0):
         self.x = max(-self.boundsx, min(self.boundsx, self.x + (self.vx * dt) ))
@@ -319,20 +305,18 @@ class Player (object):
         return None
     
     def collision_entity (self, entity):
-        SND_SHIELD.play()
+        # SND_SHIELD.play()
         self.health -= 15
         self.c = 1
-        
+
     def collision_entity_munition (self, entity_munition):
-        SND_SHIELD.play()
+        # SND_SHIELD.play()
         self.health -= entity_munition.strength
         self.c = 1.5
 
 class EncrypterDrone (object):
-    model = pyglet.graphics.vertex_list(32,('v3f/static', prepare(0,0,0,0.5,0.5,0.5,ENEMY_VERTEX_LIST)))
-    #~ model = pyglet.graphics.vertex_list(208,('v3f/static', ENCRYPTER_SHIP_2))
-    
     def __init__ (self, x, y, z, vz, phase_offset, phase_rate, phase_amplitude, appear_delay, fire_cycle, dispatch_callback):
+        self.model = VertexGeometry(renderer.ctx, prepare(0,0,0,0.5,0.5,0.5,ENEMY_VERTEX_LIST))
         self.x = x
         self.y = y
         self.z = z
@@ -373,25 +357,23 @@ class EncrypterDrone (object):
     def draw (self):
         if not self.active:
             return
-        gl.glPushMatrix()
-        gl.glTranslatef(self.virtual_x, self.virtual_y, self.z)
-        gl.glRotatef(self.virtual_rz,0,0,1)
-        gl.glColor3f(1.0, self.c, 0)
-        self.model.draw(gl.GL_LINES)
-        gl.glPopMatrix()
-        
+        renderer.matrix_stack.push()
+        renderer.matrix_stack.translate(self.virtual_x, self.virtual_y, self.z)
+        renderer.matrix_stack.rotate(self.virtual_rz, 0, 0, 1)
+        renderer.set_color(1.0, self.c, 0)
+        renderer.draw(self.model)
+        renderer.matrix_stack.pop()
+
     def collision (self, munition):
         self.c = 1
         self.health -= 1
-        
+
     def collision_player (self, player):
         self.health = 0
-        
+
 class EncryptionMunition (object):
-    model = pyglet.graphics.vertex_list(6, ('v3f/static', prepare(0,0,0,0.55,0.55,-0.5,PLAYER_BULLET_VERTEX_LIST)))
-    #~ model = pyglet.graphics.vertex_list(64,('v3f/static', PAYLOAD_MUNITION))
-    
     def __init__ (self, x, y, z, vx=0, vz=1100):
+        self.model = VertexGeometry(renderer.ctx, prepare(0,0,0,0.55,0.55,-0.5,PLAYER_BULLET_VERTEX_LIST))
         self.x = x
         self.y = y
         self.z = z
@@ -424,18 +406,16 @@ class EncryptionMunition (object):
         
     def draw (self):
         b = random.random()*0.6
-        gl.glColor3f(b, b, 1.0)
-        gl.glPushMatrix()
-        gl.glTranslatef(self.virtual_x, self.virtual_y, self.z)
-        gl.glRotatef(self.virtual_rz+self.rz,0,0,1)
-        self.model.draw(gl.GL_LINES)
-        gl.glPopMatrix()
-        
+        renderer.set_color(b, b, 1.0)
+        renderer.matrix_stack.push()
+        renderer.matrix_stack.translate(self.virtual_x, self.virtual_y, self.z)
+        renderer.matrix_stack.rotate(self.virtual_rz+self.rz, 0, 0, 1)
+        renderer.draw(self.model)
+        renderer.matrix_stack.pop()
+
 class PayloadMunition (object):
-    #~ model = pyglet.graphics.vertex_list(6, ('v3f/static', prepare(0,0,0,0.25,0.25,-0.5,PLAYER_BULLET_VERTEX_LIST)))
-    model = pyglet.graphics.vertex_list(64,('v3f/static', PAYLOAD_MUNITION))
-    
     def __init__ (self, x, y, z, vx=0, vz=1100):
+        self.model = VertexGeometry(renderer.ctx, PAYLOAD_MUNITION)
         self.x = x
         self.y = y
         self.z = z
@@ -446,7 +426,7 @@ class PayloadMunition (object):
         self.strength = PAYLOAD_MUNITION_STRENGTH
         self.boundsz = 0
         self.active = True
-        SND_DHHHD.play()
+        # SND_DHHHD.play()
         self.update()
         
     def update (self, dt=0, now=0):
@@ -469,19 +449,17 @@ class PayloadMunition (object):
         
     def draw (self):
         b = random.random()*0.6
-        gl.glColor3f(b, b, 1.0)
-        gl.glPushMatrix()
-        gl.glTranslatef(self.virtual_x, self.virtual_y, self.z)
-        gl.glRotatef(self.virtual_rz+self.rz,0,0,1)
-        self.model.draw(gl.GL_LINES)
-        gl.glPopMatrix()
-        
+        renderer.set_color(b, b, 1.0)
+        renderer.matrix_stack.push()
+        renderer.matrix_stack.translate(self.virtual_x, self.virtual_y, self.z)
+        renderer.matrix_stack.rotate(self.virtual_rz+self.rz, 0, 0, 1)
+        renderer.draw(self.model)
+        renderer.matrix_stack.pop()
+
 class PayloadDrone (object):
-    #~ model = pyglet.graphics.vertex_list(360,('v3f/static', PAYLOAD_SHIP))
-    model = pyglet.graphics.vertex_list(496,('v3f/static', PAYLOAD_SHIP_2))
-    shield = pyglet.graphics.vertex_list(120,('v3f/static', PAYLOAD_SHIELD))
-    
     def __init__ (self, x, y, z, phase, appear_delay, fire_cycle, dispatch_callback):
+        self.model = VertexGeometry(renderer.ctx, PAYLOAD_SHIP_2)
+        self.shield = VertexGeometry(renderer.ctx, PAYLOAD_SHIELD)
         self.x = x
         self.y = y
         self.z = z
@@ -500,7 +478,7 @@ class PayloadDrone (object):
         self.fire_delay = 0.3
         self.dispatch_callback = dispatch_callback
         self.c = 0
-        SND_ENTRANCE.play()
+        # SND_ENTRANCE.play()
         self.update()
         
     def update (self, dt=0, now=0):
@@ -540,27 +518,18 @@ class PayloadDrone (object):
         return True
     
     def draw (self):
-        #~ if not self.active:
-            #~ return
-            
-        #~ gl.glColor3f(1.0, 0, 1.0)
-        #~ pyglet.graphics.vertex_list(8, ('v3f/static', (
-            #~ self.left, self.y, self.bottom, self.left, self.y, self.top, self.left, self.y,
-            #~ self.top, self.right, self.y, self.top, self.right, self.y, self.top, self.right, self.y,
-            #~ self.bottom, self.right, self.y, self.bottom, self.left, self.y, self.bottom))).draw(gl.GL_LINES)
+        renderer.matrix_stack.push()
+        renderer.matrix_stack.translate(self.virtual_x, self.virtual_y+self.yoffset, self.z+self.yoffset*5)
+        renderer.matrix_stack.rotate(self.virtual_rz, 0, 0, 1)
 
-        gl.glPushMatrix()
-        gl.glTranslatef(self.virtual_x, self.virtual_y+self.yoffset, self.z+self.yoffset*5)
-        gl.glRotatef(self.virtual_rz,0,0,1)
-                    
         if self.c > 0.5:
             c2 = self.c/2.0
-            gl.glColor3f(c2*.5,c2*0.1, c2*0.1)
-            self.shield.draw(gl.GL_LINES)
-            
-        gl.glColor3f(0.8+0.2*self.c, 0.1, 0.9*self.c)
-        self.model.draw(gl.GL_LINES)
-        gl.glPopMatrix()
+            renderer.set_color(c2*.5, c2*0.1, c2*0.1)
+            renderer.draw(self.shield)
+
+        renderer.set_color(0.8+0.2*self.c, 0.1, 0.9*self.c)
+        renderer.draw(self.model)
+        renderer.matrix_stack.pop()
         
     def collision (self, munition):
         if self.z < -1800: return
@@ -908,9 +877,9 @@ class GameView(arcade.View):
         else:
             self.camera.position((0, 0, -100000))
         rz = self.player.x / 200.0
-        gl.glRotatef(-5 * rz, 0, 0, 1)
+        renderer.matrix_stack.rotate(-5 * rz, 0, 0, 1)
         self.terrain.draw()
-        gl.glEnable(gl.GL_DEPTH_TEST)
+        renderer.enable_depth_test()
         for entity in self.collision_entities:
             entity.draw()
         for entity in self.collision_entities_b:
@@ -921,7 +890,7 @@ class GameView(arcade.View):
             munition.draw()
         for munition in self.munitions_c:
             munition.draw()
-        gl.glDisable(gl.GL_DEPTH_TEST)
+        renderer.disable_depth_test()
         self.player.draw()
 
         # Draw HUD
