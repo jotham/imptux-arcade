@@ -8,6 +8,8 @@ A 3D rail shooter entry for [PyWeek #8](http://www.pyweek.org/8/).
 
 Originally written in Python 2 + Pyglet 1.1, migrated to Python 3 + [Arcade](https://api.arcade.academy/) 3.x.
 
+![Screenshot](assets/screenshot.png)
+
 ---
 
 ## Installation
