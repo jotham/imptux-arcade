@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 
-import imptux, pyglet, time, math, random, platform, os
+import imptux, time, math, random, os
 import imptux.models
+import arcade
 from pyglet import gl
 
 # generate displacement map for terrain cage
@@ -679,108 +680,118 @@ class LevelOne (object):
                 self.mode = 0
                 self.wave_counter = 0
                 print(self.mode)
-        
-class GameScene (object):
-    # game_music = SND_GAME_MUSIC
-    
-    def __init__ (self, window, framerate=60.0, level_framerate=30.0):
-        self.player = None
-        
-        self.window = window
-        self.width = window.width
-        self.height = window.height
-        self.framerate = framerate
-        self.level_framerate = level_framerate
-        self.window.push_handlers(self)
+
+
+class MenuView(arcade.View):
+    def on_show_view(self):
+        self.story = arcade.load_texture(os.path.join('.', 'assets', 'story.png'))
+        self.title = arcade.Text(
+            "TUX IMPERIUM", self.window.width // 2,
+            self.window.height // 2 + 60 + self.story.height // 2 + 10,
+            (200, 0, 0, 255), 48,
+            anchor_x='center', font_name='Logic twenty-five A',
+        )
+
+    def on_draw(self):
+        self.clear()
+        cx = self.window.width // 2
+        cy = self.window.height // 2
+        arcade.draw_texture_rect(
+            self.story,
+            arcade.XYWH(cx, cy, self.story.width, self.story.height),
+        )
+        self.title.draw()
+
+    def on_mouse_release(self, x, y, button, modifiers):
+        self.window.show_view(GameView())
+
+    def on_key_release(self, symbol, modifiers):
+        if symbol != arcade.key.F and symbol != arcade.key.ESCAPE:
+            self.window.show_view(GameView())
+
+
+class GameView(arcade.View):
+    def on_show_view(self):
         self.camera = imptux.Camera()
         self.toggle_camera_mode(DEBUG)
-        #~ self.window.set_fullscreen(not self.window.fullscreen)
-        #~ self.window.set_exclusive_mouse()
-
-        # self.music_player = pyglet.media.Player()
-        # self.music_player.eos_action = pyglet.media.Player.EOS_LOOP
-        # self.music_player.queue(self.game_music)
         self.toggle_game_music(not DEBUG)
-        # self.music_player.volume = 0.7
-        
-        help_stream = open(os.path.join(os.getcwd(), 'assets', 'help.png'), 'rb')
-        self.help_sprite = pyglet.sprite.Sprite(pyglet.image.load('help.png', help_stream))
+
+        self.help_texture = arcade.load_texture(os.path.join('.', 'assets', 'help.png'))
         self.help_mode = False
-        
-        # self.joystick = joystick.JoystickHandler()
-        # print("%d joystick(s) found. Press F2 to enable." % self.joystick.joysticks)
-        self.toggle_joystick(True)
-        self.score_label = pyglet.text.Label("00000000", 'Logic twenty-five A', 48, color=(200,00,0,255))
-        self.health_label = pyglet.text.Label("000", 'Logic twenty-five A', 48, color=(200,00,0,255))
-        self.notification_label = pyglet.text.Label("", 'Logic twenty-five A', 84, color=(200,0,0,255))
+
+        self.score_label = arcade.Text(
+            "00000000", self.window.width - 10, self.window.height - 60,
+            (200, 0, 0, 255), 48,
+            anchor_x='right', font_name='Logic twenty-five A',
+        )
+        self.health_label = arcade.Text(
+            "000", 10, self.window.height - 60,
+            (200, 0, 0, 255), 48,
+            font_name='Logic twenty-five A',
+        )
+        self.notification_label = arcade.Text(
+            "", self.window.width // 2, self.window.height // 2,
+            (200, 0, 0, 255), 84,
+            anchor_x='center', font_name='Logic twenty-five A',
+        )
         self.current_level = None
         self.notification_timestamp = 0
-        self.hud_dirty = False
         self.fire_a = False
         self.fire_b = False
         self.new_game()
-    
-    def status_check (self, dt):
-        print(len(self.collision_entities), len(self.collision_entities_b), len(self.munitions_a), len(self.munitions_b), len(self.munitions_c))
-    
-    def notify (self, what, duration=3.0):
-        self.notification_label.text = str(what)
+
+    def on_hide_view(self):
+        if hasattr(self, 'music_player') and self.music_player:
+            arcade.stop_sound(self.music_player)
+            self.music_player = None
+
+    def status_check(self, dt):
+        print(len(self.collision_entities), len(self.collision_entities_b),
+              len(self.munitions_a), len(self.munitions_b), len(self.munitions_c))
+
+    def notify(self, what, duration=3.0):
+        self.notification_label.value = str(what)
         self.notification_timestamp = time.time() + duration
-        
-    def end (self):
-        pyglet.clock.unschedule(self.update_game)
-        pyglet.clock.unschedule(self.status_check)
-        if self.current_level:
-            pyglet.clock.unschedule(self.current_level.update)
-        self.window.pop_handlers()
-        
-    def new_game (self):
-        if self.current_level:
-            pyglet.clock.unschedule(self.current_level.update)
-        pyglet.clock.unschedule(self.update_game)
-        self.collision_entities = [] # encrypters and scene decorations
-        self.collision_entities_b = [] # payloads
-        self.munitions_a = [] # simple vs encrypter
-        self.munitions_b = [] # secondary vs payload
-        self.munitions_c = [] # return fire vs player
+
+    def new_game(self):
+        self.collision_entities = []
+        self.collision_entities_b = []
+        self.munitions_a = []
+        self.munitions_b = []
+        self.munitions_c = []
         self.terrain = Terrain(0, -200, 0)
         self.player = Player(0, 0, -100)
         self.score = 0
-        self.current_level = LevelOne(self.dispatch_entities_callback, self.dispatch_entities_b_callback, self.dispatch_entity_munitions_callback)
+        self.current_level = LevelOne(
+            self.dispatch_entities_callback,
+            self.dispatch_entities_b_callback,
+            self.dispatch_entity_munitions_callback,
+        )
         self.notify(self.current_level.label)
-        #~ self.level_label_timestamp = time.time() + 3
-        #~ self.level_label.text = self.current_level.label
-        self.hud_dirty = True
-        pyglet.clock.schedule_interval(self.update_game, 1/self.framerate)
-        pyglet.clock.schedule_interval(self.current_level.update, 1/self.level_framerate)
-        #~ pyglet.clock.schedule_interval(self.status_check, 15)
-        
-    def dispatch_entities_callback (self, entities):
+        self.toggle_game_music(not DEBUG)
+
+    def dispatch_entities_callback(self, entities):
         self.collision_entities.extend(entities)
-        
-    def dispatch_entities_b_callback (self, entities):
+
+    def dispatch_entities_b_callback(self, entities):
         self.collision_entities_b.extend(entities)
-        
-    def dispatch_entity_munitions_callback (self, entities):
+
+    def dispatch_entity_munitions_callback(self, entities):
         self.munitions_c.extend(entities)
-        
-    def update_game (self, dt):
+
+    def on_update(self, dt):
         now = time.time()
-        
-        # self.joystick.dispatch_events()
+        self.current_level.update(dt)
         self.player.update(dt, now)
         if self.player.health <= 0:
             print("Game over! Your final score was %d" % self.score)
             self.new_game()
-            
+
         self.terrain.update(dt)
-        #~ self.camera.update(dt)
         player = self.player
-        
-        # TODO: The below code is retarded
-        
+
         cooldown_rate = -10
-        
+
         if self.fire_a:
             munitions = self.player.fire(now, 0)
             if munitions:
@@ -789,7 +800,7 @@ class GameScene (object):
                     self.player.weapon_b_cooldown = min(100, self.player.weapon_b_cooldown + 1)
         else:
             self.player.weapon_a_cooldown = max(0, self.player.weapon_a_cooldown + cooldown_rate * dt)
-            
+
         if self.fire_b:
             munitions = self.player.fire(now, 1)
             if munitions:
@@ -798,90 +809,74 @@ class GameScene (object):
                 self.munitions_b.extend(munitions)
         else:
             self.player.weapon_b_cooldown = max(0, self.player.weapon_b_cooldown + cooldown_rate * dt)
-            
-        # TODO: Reorganise this to minimise unnessasary loops
-        
-        # UPDATE & COLLISION TEST: Entity vs Player
+
         temp = []
         for entity in self.collision_entities:
             if entity.update(dt, now):
-                if entity.left <= player.right and player.left <= entity.right and entity.bottom <= player.top and player.bottom <= entity.top:
+                if (entity.left <= player.right and player.left <= entity.right and
+                        entity.bottom <= player.top and player.bottom <= entity.top):
                     entity.collision_player(player)
                     player.collision_entity(entity)
                 else:
                     temp.append(entity)
             else:
                 self.score += 100
-                self.hud_dirty = True
         self.collision_entities = temp
-        
-        # UPDATE: Special entities
+
         temp = []
         for entity in self.collision_entities_b:
             if entity.update(dt, now):
                 temp.append(entity)
             else:
                 self.score += 1000
-                self.hud_dirty = True
         self.collision_entities_b = temp
-                
-        # UPDATE & COLLISION TEST: Entity munitions vs Player
+
         temp = []
         for entity in self.munitions_c:
             if entity.update(dt, now):
-                if entity.left <= player.right and player.left <= entity.right and entity.bottom <= player.top and player.bottom <= entity.top:
+                if (entity.left <= player.right and player.left <= entity.right and
+                        entity.bottom <= player.top and player.bottom <= entity.top):
                     entity.collision_player(player)
                     player.collision_entity_munition(entity)
                 else:
                     temp.append(entity)
         self.munitions_c = temp
-        
-        # UPDATE & COLLISION TEST: Player munitions vs entities
+
         temp = []
         for munition in self.munitions_a:
             if munition.update(dt):
                 for entity in self.collision_entities:
-                    if entity.left <= munition.right and munition.left <= entity.right and entity.bottom <= munition.top and munition.bottom <= entity.top:
+                    if (entity.left <= munition.right and munition.left <= entity.right and
+                            entity.bottom <= munition.top and munition.bottom <= entity.top):
                         entity.collision(munition)
                         munition.collision(entity)
                         break
                 for entity in self.collision_entities_b:
-                    if entity.left <= munition.right and munition.left <= entity.right and entity.bottom <= munition.top and munition.bottom <= entity.top:
+                    if (entity.left <= munition.right and munition.left <= entity.right and
+                            entity.bottom <= munition.top and munition.bottom <= entity.top):
                         munition.collision(entity)
                         break
                 temp.append(munition)
         self.munitions_a = temp
-        
-        # UPDATE & COLLISION TEST: Player special munitions vs special entities
+
         temp = []
         for munition in self.munitions_b:
             if munition.update(dt):
                 for entity in self.collision_entities_b:
-                    if entity.left <= munition.right and munition.left <= entity.right and entity.bottom <= munition.top and munition.bottom <= entity.top:
+                    if (entity.left <= munition.right and munition.left <= entity.right and
+                            entity.bottom <= munition.top and munition.bottom <= entity.top):
                         entity.collision(munition)
                         munition.collision(entity)
                         break
                 for entity in self.collision_entities:
-                    if entity.left <= munition.right and munition.left <= entity.right and entity.bottom <= munition.top and munition.bottom <= entity.top:
+                    if (entity.left <= munition.right and munition.left <= entity.right and
+                            entity.bottom <= munition.top and munition.bottom <= entity.top):
                         munition.collision(entity)
                         break
                 temp.append(munition)
         self.munitions_b = temp
 
-        self.window.invalid = True
-        
-    def toggle_joystick (self, active=False):
-        self.joystick_mode = active
-        if self.joystick_mode:
-            pass
-            # self.joystick.push_handlers(self.on_joystick_button, self.on_joystick_axis)
-            # print "Joystick enabled"
-        else:
-            pass
-            # self.joystick.pop_handlers()
-            # print "Joystick disabled"
-    
-    def toggle_camera_mode (self, debug=False):
+    def toggle_camera_mode(self, debug=False):
         self.camera_debug_mode = debug
         if self.camera_debug_mode:
             self.camera.x, self.camera.y, self.camera.z = (0.0, 1344, 2348)
@@ -892,37 +887,28 @@ class GameScene (object):
             self.camera.rx, self.camera.ry = (-13.25, -22.5)
             self.camera.fieldofview = 90
             self.camera.clipfar = 7000
-        self.camera.defaultView(self.width, self.height)
-        self.window.invalid = True
+        self.camera.defaultView(self.window.width, self.window.height)
 
-    def toggle_game_music (self, active=True):
+    def toggle_game_music(self, active=True):
         self.playing_music = active
+        if not hasattr(self, 'music_player'):
+            self.music_player = None
         if self.playing_music:
             pass
-            # self.music_player.play()
         else:
             pass
-            # self.music_player.pause()
 
-    def toggle_help (self, active=True):
-        self.playing_music = active
-        if self.playing_music:
-            pass
-            # self.music_player.play()
-        else:
-            pass
-            # self.music_player.pause()
-    
-    def on_draw (self):
-        self.window.clear()
-        if not self.player: return
-        self.camera.x = self.player.x/1.5
+    def on_draw(self):
+        self.clear()
+        if not self.player:
+            return
+        self.camera.x = self.player.x / 1.5
         if self.camera_debug_mode:
             self.camera.position()
         else:
             self.camera.position((0, 0, -100000))
         rz = self.player.x / 200.0
-        gl.glRotatef(-5*rz,0,0,1)
+        gl.glRotatef(-5 * rz, 0, 0, 1)
         self.terrain.draw()
         gl.glEnable(gl.GL_DEPTH_TEST)
         for entity in self.collision_entities:
@@ -936,216 +922,117 @@ class GameScene (object):
         for munition in self.munitions_c:
             munition.draw()
         gl.glDisable(gl.GL_DEPTH_TEST)
-        
         self.player.draw()
-        
-        # Draw UI
-        gl.glLoadIdentity() 
-        
-        #~ if self.hud_dirty:
-        self.health_label.text = "%03d (%03d:%03d)" % (self.player.health, self.player.weapon_a_cooldown, self.player.weapon_b_cooldown)
-        self.score_label.text = "%08d" % self.score
-        # %03d%% %03d%% ... self.player.weapon_a_cooldown, self.player.weapon_b_cooldown, 
-        
-            
-        if self.window.fullscreen:
-            gl.glTranslatef(-self.width,self.height-self.score_label.content_height,-1090)
-            self.health_label.draw()
-            gl.glTranslatef(2*self.width-self.score_label.content_width,0,0)
-            self.score_label.draw()
-            if self.notification_timestamp > time.time():
-                gl.glLoadIdentity() 
-                gl.glTranslatef(self.notification_label.content_width/-2,(self.score_label.content_height)/2,-1090)
-                gl.glColor4f(0,0,0,128)
-                gl.glRectf(0, 0, self.notification_label.content_width+6, self.notification_label.content_height+6)
-                self.notification_label.draw()
-        else:
-            gl.glTranslatef(-self.width,self.height-self.score_label.content_height,-512)
-            self.health_label.draw()
-            gl.glTranslatef(2*self.width-self.score_label.content_width,0,0)
-            self.score_label.draw()
-            if self.notification_timestamp > time.time():
-                gl.glLoadIdentity() 
-                gl.glTranslatef(self.notification_label.content_width/-2,(self.score_label.content_height)/2,-1090)
-                gl.glColor4f(0,0,0,128)
-                gl.glRectf(0, 0, self.notification_label.content_width+6, self.notification_label.content_height+6)
-                self.notification_label.draw()
-                
-        # Draw help
+
+        # Draw HUD
+        self.health_label.value = "%03d (%03d:%03d)" % (
+            self.player.health, self.player.weapon_a_cooldown, self.player.weapon_b_cooldown)
+        self.score_label.value = "%08d" % self.score
+        self.health_label.draw()
+        self.score_label.draw()
+
+        if self.notification_timestamp > time.time():
+            nw = self.notification_label.content_width
+            nh = self.notification_label.content_height
+            cx = self.window.width // 2
+            cy = self.window.height // 2
+            arcade.draw_lrbt_rectangle_filled(
+                cx - nw // 2 - 3, cx + nw // 2 + 3,
+                cy - 3, cy + nh + 3,
+                (0, 0, 0, 128),
+            )
+            self.notification_label.draw()
+
         if self.help_mode:
-            gl.glLoadIdentity() 
-            gl.glTranslatef(self.help_sprite.width/-2,(self.help_sprite.height)/-2,-250)
-            self.help_sprite.draw()
-            
-        self.window.invalid = False
-            
-    def on_key_press (self, symbol, modifiers):
-        if symbol == pyglet.window.key.A:
+            cx = self.window.width // 2
+            cy = self.window.height // 2
+            arcade.draw_texture_rect(
+                self.help_texture,
+                arcade.XYWH(cx, cy, self.help_texture.width, self.help_texture.height),
+            )
+
+    def on_key_press(self, symbol, modifiers):
+        if symbol == arcade.key.A:
             self.player.move_left(1)
-        elif symbol == pyglet.window.key.D:
+        elif symbol == arcade.key.D:
             self.player.move_right(1)
-        elif symbol == pyglet.window.key.J:
+        elif symbol == arcade.key.J:
             self.fire_a = True
-        elif symbol == pyglet.window.key.K:
+        elif symbol == arcade.key.K:
             self.fire_b = True
-        elif symbol == pyglet.window.key.C:
-            print('self.camera.x, self.camera.y, self.camera.z = (%s, %s, %s)' % (self.camera.x, self.camera.y, self.camera.z))
-            print('self.camera.rx, self.camera.ry = (%s, %s)' % (self.camera.rx, self.camera.ry))
-        elif symbol == pyglet.window.key.F1:
+        elif symbol == arcade.key.C:
+            print('camera: x=%s y=%s z=%s rx=%s ry=%s' % (
+                self.camera.x, self.camera.y, self.camera.z,
+                self.camera.rx, self.camera.ry))
+        elif symbol == arcade.key.F1:
             self.toggle_camera_mode(not self.camera_debug_mode)
-        # elif symbol == pyglet.window.key.F2:
-        #     self.toggle_joystick(not self.joystick_mode)
-        elif symbol == pyglet.window.key.M:
+        elif symbol == arcade.key.M:
             self.toggle_game_music(not self.playing_music)
-        elif symbol == pyglet.window.key.H:
+        elif symbol == arcade.key.H:
             self.help_mode = not self.help_mode
-        
-    def on_key_release (self, symbol, modifiers):
-        if symbol == pyglet.window.key.A:
+
+    def on_key_release(self, symbol, modifiers):
+        if symbol == arcade.key.A:
             self.player.move_left(0)
-        elif symbol == pyglet.window.key.D:
+        elif symbol == arcade.key.D:
             self.player.move_right(0)
-        elif symbol == pyglet.window.key.J:
+        elif symbol == arcade.key.J:
             self.fire_a = False
-        elif symbol == pyglet.window.key.K:
+        elif symbol == arcade.key.K:
             self.fire_b = False
-        
-    def on_mouse_press (self, x, y, button, modifiers):
-        if button == pyglet.window.mouse.LEFT:
+
+    def on_mouse_press(self, x, y, button, modifiers):
+        if button == arcade.MOUSE_BUTTON_LEFT:
             self.fire_a = True
-            #~ self.player_fire(0)
-        if button == pyglet.window.mouse.RIGHT:
+        if button == arcade.MOUSE_BUTTON_RIGHT:
             self.fire_b = True
-            #~ self.player_fire(1)
-            
-    def on_mouse_release (self, x, y, button, modifiers):
-        if button == pyglet.window.mouse.LEFT:
+
+    def on_mouse_release(self, x, y, button, modifiers):
+        if button == arcade.MOUSE_BUTTON_LEFT:
             self.fire_a = False
-        if button == pyglet.window.mouse.RIGHT:
+        if button == arcade.MOUSE_BUTTON_RIGHT:
             self.fire_b = False
-                    
-    def on_joystick_button (self, joystick, button, pressed):
-        #~ if not pressed: return
-        if button == 0:
-            self.fire_a = pressed
-            #~ self.player_fire(0)
-        elif button == 1:
-            self.fire_b = pressed
-            #~ self.player_fire(1)
-        elif button == 3:
-            self.window.set_fullscreen(not self.window.fullscreen)
 
-    def on_joystick_axis (self, joystick, axis, value):
-        if axis == 0 or axis == 4:
-            self.player.move_free(value)
-        
-    def on_resize (self, width, height):
-        self.width = width
-        self.height = height
+    def on_resize(self, width, height):
+        super().on_resize(width, height)
         self.camera.defaultView(width, height)
-        self.window.invalid = True
-        return pyglet.event.EVENT_HANDLED
-    
-    def on_mouse_drag (self, x, y, dx, dy, button, modifiers):
-        if not modifiers & pyglet.window.key.MOD_ALT: return
-        if button==1:
-            self.camera.x-=dx*2
-            self.camera.y-=dy*2
-        elif button==2:
-            self.camera.x-=dx*2
-            self.camera.z-=dy*2
-        elif button==4:
-            self.camera.ry+=dx/4.
-            self.camera.rx-=dy/4.
 
-class MenuScene (object):
-    def __init__ (self, window, navigation_callback):
-        self.window = window
-        self.width = window.width
-        self.height = window.height
-        self.window.push_handlers(self)
-        self.navigation_callback = navigation_callback
-        #~ self.document = pyglet.text.decode_text('Controls:\n')
-        #~ self.layout = pyglet.text.layout.TextLayout(self.document, window.width, window.height, multiline=True)
-        
-        story_stream = open(os.path.join(os.getcwd(), 'assets', 'story.png'), 'rb')
-        self.story = pyglet.sprite.Sprite(pyglet.image.load('story.png', story_stream))
-
-        self.title = pyglet.text.Label("TUX IMPERIUM", 'Logic twenty-five A', 48, color=(200,00,0,255))
-
-    def end (self):
-        self.window.pop_handlers()
-        
-    def on_mouse_release (self, x, y, button, modifiers):
-        self.navigation_callback()
-            
-    def on_key_release (self, symbol, modifiers):
-        if symbol != pyglet.window.key.F and symbol != pyglet.window.key.ESCAPE:
-            self.navigation_callback()
-            
-    def on_draw (self):
-        self.window.clear()
-        gl.glLoadIdentity() 
-        gl.glTranslatef((self.window.width-self.title.content_width)/2,(self.window.height-self.title.content_height)/2+60, 0)
-        self.title.draw()
-        gl.glTranslatef(-7,-(self.story.height+10), 0)
-        self.story.draw()
-    
-class TuxImperium (object):
-    def __init__ (self, window):
-        self.window = window
-        self.window.push_handlers(self.on_key_release)
-        pyglet.font.add_file(os.path.join('.','assets', 'l25a__.TTF'))
-        self.font = pyglet.font.load('Logic twenty-five A')
-        self.current_scene = None
-        self.profiler = None
-        
-    def on_key_release (self, symbol, modifiers):
-        if symbol == pyglet.window.key.ESCAPE:
-            pyglet.app.exit()
-        elif symbol == pyglet.window.key.G:
-            self.show_profiler()
-            return pyglet.event.EVENT_HANDLED
-        elif symbol == pyglet.window.key.S:
-            pyglet.image.get_buffer_manager().get_color_buffer().save('screenshot-%d.png' % (int(time.time())))
-            return pyglet.event.EVENT_HANDLED
-        elif symbol == pyglet.window.key.F:
-            self.window.set_fullscreen(not self.window.fullscreen)
-            
-    def show_profiler (self):
-        pass
-        # FYI: Wont work if you don't have PyGTK
-        #~ if GPROFILER_ERROR:
-            #~ print 'Failed to initialize profiler (%s)' % GPROFILER_ERROR
-            #~ return
-        #~ if self.profiler:
-            #~ self.profiler.destroy()
-        #~ self.profiler = profiler.GProfiler()
-        #~ self.profiler.show()
-    
-    def scene_menu (self):
-        if self.current_scene:
-            self.current_scene.end()
-        self.current_scene = MenuScene(self.window, self.scene_game)
-        
-    def scene_game (self):
-        if self.current_scene:
-            self.current_scene.end()
-        self.current_scene = GameScene(self.window)
+    def on_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
+        if not modifiers & arcade.key.MOD_ALT:
+            return
+        if buttons == 1:
+            self.camera.x -= dx * 2
+            self.camera.y -= dy * 2
+        elif buttons == 2:
+            self.camera.x -= dx * 2
+            self.camera.z -= dy * 2
+        elif buttons == 4:
+            self.camera.ry += dx / 4.
+            self.camera.rx -= dy / 4.
 
 
-def main ():
-    # if LooseVersion(platform.python_version()) < LooseVersion('2.4'):
-    #     print('Warning: python version %s is unsupported.' % platform.python_version())
-    # if LooseVersion(pyglet.version) < LooseVersion('1.1.2') :
-    #     print ('Warning: pyglet version %s is unsupported.' % pyglet.version)
-    #~ if GPROFILER_ERROR:
-        #~ print 'Failed to initialize profiler (%s)' % GPROFILER_ERROR
-    #~ else:
-        #~ profiler.pyglet()
-    game = TuxImperium(pyglet.window.Window(1000, 500))
-    game.scene_menu()
-    pyglet.app.run()
-    
+class TuxImperium(arcade.Window):
+    def __init__(self):
+        super().__init__(1000, 500, "Tux Imperium")
+        from imptux.renderer import renderer
+        renderer.init(self.ctx)
+        arcade.load_font(os.path.join('.', 'assets', 'l25a__.TTF'))
+        self.show_view(MenuView())
+
+    def on_key_release(self, symbol, modifiers):
+        if symbol == arcade.key.ESCAPE:
+            self.close()
+        elif symbol == arcade.key.S:
+            arcade.get_image().save('screenshot-%d.png' % int(time.time()))
+            return True
+        elif symbol == arcade.key.F:
+            self.set_fullscreen(not self.fullscreen)
+
+
+def main():
+    TuxImperium()
+    arcade.run()
+
+
 if __name__ == '__main__':
     main()
