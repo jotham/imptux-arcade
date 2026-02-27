@@ -21,7 +21,7 @@ def prepare (xo,yo,zo,xs,ys,zs,v):
     for n in range(int(len(v)/3)):
         return_list.extend([xo+v[n*3]*xs,yo+v[n*3+1]*ys,zo+v[n*3+2]*zs])
     return return_list
-  
+
 def make_debris (count):
     spreadx = 50
     spreadz = 25
@@ -136,7 +136,7 @@ class PlayerBulletModel (object):
         self.boundsz = -2000
         self.active = True
         self.update()
-        
+
     def update (self, dt=0):
         if not self.active or self.z < self.boundsz or self.x < -200 or self.x > 200:
             return False
@@ -149,10 +149,10 @@ class PlayerBulletModel (object):
         self.rz += self.vrz * dt
         self.virtual_rz, self.virtual_x, self.virtual_y = get_displacement(self.x)
         return True
-    
+
     def collision (self, entity):
         self.active = False
-        
+
     def draw (self):
         renderer.set_color(1, 0.8, 0)
         renderer.matrix_stack.push()
@@ -177,7 +177,7 @@ class PlayerBulletModelSpecial (object):
         self.boundsz = -2000
         self.active = True
         self.update()
-        
+
     def update (self, dt=0):
         if not self.active or self.z < self.boundsz or self.x < -200 or self.x > 200:
             return False
@@ -190,10 +190,10 @@ class PlayerBulletModelSpecial (object):
         self.rz += self.vrz * dt
         self.virtual_rz, self.virtual_x, self.virtual_y = get_displacement(self.x)
         return True
-    
+
     def collision (self, entity):
         self.active = False
-        
+
     def draw (self):
         b = random.random()*0.6
         renderer.set_color(b, b, 1.0)
@@ -230,7 +230,7 @@ class Player (object):
         self.bounce = 0
         self.new_grind = True
         self.update()
-        
+
     def draw (self):
         renderer.matrix_stack.push()
         renderer.matrix_stack.translate(self.virtual_x, self.virtual_y+self.yoffset, self.z)
@@ -253,7 +253,7 @@ class Player (object):
         renderer.set_color(0.2+.8*self.c, 0.7+-.5*self.c, 0)
         renderer.draw(self.model)
         renderer.matrix_stack.pop()
-    
+
     def update (self, dt=0, now=0):
         self.x = max(-self.boundsx, min(self.boundsx, self.x + (self.vx * dt) ))
         self.left = self.x - 28
@@ -269,28 +269,28 @@ class Player (object):
             self.heal_timestamp = now + self.heal_rate
             self.health += 1
         return True
-        
+
     def move_left (self, mode):
         if mode == 1:
             self.decay = 1
             self.vx = -self.iv
         elif self.vx < 0:
             self.decay = 0.5
-            
+
     def move_right (self, mode):
         if mode == 1:
             self.decay = 1
             self.vx = self.iv
         elif self.vx > 0:
             self.decay = 0.5
-    
+
     def move_free (self, amount):
         if abs(amount) < 0.2:
             self.decay = 0.5
         else:
             self.decay = 1
             self.vx = amount * self.iv
-            
+
     def fire (self, now, mode=0):
         if mode == 0 and now > self.timestamp_a:
             self.timestamp_a = now + 0.1 + (self.weapon_a_cooldown/100.0)
@@ -303,7 +303,7 @@ class Player (object):
                 PlayerBulletModelSpecial(self.x-25, self.y, self.z+15, 5),
                 PlayerBulletModelSpecial(self.x+25, self.y, self.z+15, -5))
         return None
-    
+
     def collision_entity (self, entity):
         arcade.play_sound(SND_SHIELD)
         self.health -= 15
@@ -332,7 +332,7 @@ class EncrypterDrone (object):
         self.dispatch_callback = dispatch_callback
         self.c = 0
         self.update()
-        
+
     def update (self, dt=0, now=0):
         if self.health < 0 or self.z > 0:
             return False
@@ -353,7 +353,7 @@ class EncrypterDrone (object):
                 self.active = True
                 self.fire_timestamp = now + self.fire_cycle
         return True
-    
+
     def draw (self):
         if not self.active:
             return
@@ -385,7 +385,7 @@ class EncryptionMunition (object):
         self.boundsz = 0
         self.active = True
         self.update()
-        
+
     def update (self, dt=0, now=0):
         if (not self.active) or self.z > self.boundsz or self.x < -200 or self.x > 200:
             return False
@@ -397,13 +397,13 @@ class EncryptionMunition (object):
         self.bottom = self.z - 2.5#5
         self.virtual_rz, self.virtual_x, self.virtual_y = get_displacement(self.x)
         return True
-    
+
     def collision (self, entity):
         self.active = False
-        
+
     def collision_player (self, player):
         self.active = False
-        
+
     def draw (self):
         b = random.random()*0.6
         renderer.set_color(b, b, 1.0)
@@ -428,7 +428,7 @@ class PayloadMunition (object):
         self.active = True
         arcade.play_sound(SND_DHHHD)
         self.update()
-        
+
     def update (self, dt=0, now=0):
         if not self.active or self.z > self.boundsz or self.x < -200 or self.x > 200:
             return False
@@ -440,13 +440,13 @@ class PayloadMunition (object):
         self.bottom = self.z - 2.5#5
         self.virtual_rz, self.virtual_x, self.virtual_y = get_displacement(self.x)
         return True
-    
+
     def collision (self, entity):
         self.active = False
-        
+
     def collision_player (self, player):
         self.active = False
-        
+
     def draw (self):
         b = random.random()*0.6
         renderer.set_color(b, b, 1.0)
@@ -480,7 +480,7 @@ class PayloadDrone (object):
         self.c = 0
         arcade.play_sound(SND_ENTRANCE)
         self.update()
-        
+
     def update (self, dt=0, now=0):
         if self.health < 0 or self.z > 0:
             self.health = 0
@@ -490,7 +490,7 @@ class PayloadDrone (object):
         if self.z < -1800:
             self.z += self.vz * dt
             self.fire_timestamp = now
-        
+
         if self.fire_timestamp < now:
             self.fire_timestamp = now + self.fire_delay
             xoff = (self.step/4.0) * 100 - 50
@@ -501,10 +501,10 @@ class PayloadDrone (object):
                 self.step = 0
                 if self.fire_delay > 0.2:
                     self.fire_delay *= 0.95
-            
+
         self.yoffset = 4*math.sin(self.bounce)
         self.bounce += self.bounce_rate * dt
-            
+
         self.left = self.x - 80
         self.right = self.x + 80
         self.top = self.z + 139
@@ -515,7 +515,7 @@ class PayloadDrone (object):
             #~ if self.active_timestamp < now:
                 #~ self.active = True
         return True
-    
+
     def draw (self):
         renderer.matrix_stack.push()
         renderer.matrix_stack.translate(self.virtual_x, self.virtual_y+self.yoffset, self.z+self.yoffset*5)
@@ -529,12 +529,12 @@ class PayloadDrone (object):
         renderer.set_color(0.8+0.2*self.c, 0.1, 0.9*self.c)
         renderer.draw(self.model)
         renderer.matrix_stack.pop()
-        
+
     def collision (self, munition):
         if self.z < -1800: return
         self.c = 1
         self.health -= 1
-        
+
     def collision_player (self, player):
         self.health = 0
 
@@ -542,22 +542,22 @@ def make_fire_probability (probability, sizes=(1, 4, 0.2)):
     if random.random() < probability:
         return random.choice(sizes)
     return 0
-    
+
 class LevelOne (object):
     label = 'LEVEL: TRAFFIC'
-    
+
     def __init__ (self, dispatch_callback, dispatch_b_callback, dispatch_entity_munitions_callback):
         #~ super(EventDispatcher, self).__init__()
         self.dispatch_callback = dispatch_callback
         self.dispatch_b_callback = dispatch_b_callback
         self.dispatch_entity_munitions_callback = dispatch_entity_munitions_callback
-        self.drone_timestamp = time.time() 
+        self.drone_timestamp = time.time()
         self.drone_period = 2
         self.start_timestamp = self.drone_timestamp + 3
         self.wave_counter = 0
         self.mode = 0
         self.payload = None
-    
+
     def update (self, dt):
         now = time.time()
         if self.drone_timestamp > now or self.start_timestamp > now:
@@ -575,7 +575,7 @@ class LevelOne (object):
                 self.wave_counter = 0
                 print(self.mode)
         elif self.mode == 1:
-            count = 3.0 
+            count = 3.0
             self.dispatch_callback([EncrypterDrone(n*-100, -200, -2400 + n*-60, 600, n/count*-math.pi/2, math.pi/2, 200, 1+now+n*.35, 1.5*(n+1)/count, self.dispatch_entity_munitions_callback) for n in range(int(count))])
             self.dispatch_callback([EncrypterDrone(n*-100, -200, -2600 + n*-60, 600, n/count*-math.pi/2, math.pi/2, 50, now+n*.35, (1.5+(n+1)/count)*2, self.dispatch_entity_munitions_callback) for n in range(int(count))])
             self.dispatch_callback([EncrypterDrone(n*-100, -200, -2765 + n*-60, 600, n/count*-math.pi/2, math.pi/2, -50, now+n*.35, (1.5+(n+1)/count)*2, self.dispatch_entity_munitions_callback) for n in range(int(count))])
@@ -679,6 +679,15 @@ class MenuView(arcade.View):
 
 
 class GameView(arcade.View):
+    def __init__(self):
+        super().__init__()
+        self.current_level = None
+        self.player = None
+        self.fire_a = False
+        self.fire_b = False
+        self.music_player = None
+        self.playing_music = False
+
     def on_show_view(self):
         self.camera = imptux.Camera()
         self.toggle_camera_mode(DEBUG)
@@ -749,8 +758,11 @@ class GameView(arcade.View):
         self.munitions_c.extend(entities)
 
     def on_update(self, dt):
+        if not self.player:
+            return
         now = time.time()
-        self.current_level.update(dt)
+        if self.current_level:
+           self.current_level.update(dt)
         self.player.update(dt, now)
         if self.player.health <= 0:
             print("Game over! Your final score was %d" % self.score)
@@ -864,7 +876,7 @@ class GameView(arcade.View):
             self.music_player = None
         if self.playing_music:
             if self.music_player is None:
-                self.music_player = arcade.play_sound(SND_GAME_MUSIC, looping=True)
+                self.music_player = arcade.play_sound(SND_GAME_MUSIC, loop=True)
         else:
             if self.music_player is not None:
                 arcade.stop_sound(self.music_player)
@@ -924,6 +936,8 @@ class GameView(arcade.View):
             )
 
     def on_key_press(self, symbol, modifiers):
+        if not self.player:
+            return
         if symbol == arcade.key.A:
             self.player.move_left(1)
         elif symbol == arcade.key.D:
@@ -944,6 +958,8 @@ class GameView(arcade.View):
             self.help_mode = not self.help_mode
 
     def on_key_release(self, symbol, modifiers):
+        if not self.player:
+            return
         if symbol == arcade.key.A:
             self.player.move_left(0)
         elif symbol == arcade.key.D:

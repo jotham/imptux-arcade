@@ -3,6 +3,7 @@
 import math
 import struct
 from pyglet.math import Mat4, Vec3
+from arcade.gl import BufferDescription
 
 VERTEX_SHADER = """
 #version 330 core
@@ -35,6 +36,7 @@ class VertexGeometry:
         """
         self.ctx = ctx
         n = len(positions) // 3
+        self._n = n
         if colors is None:
             colors = [1.0, 1.0, 1.0, 1.0] * n
 
@@ -46,14 +48,13 @@ class VertexGeometry:
 
         self._geometry = ctx.geometry(
             [
-                ctx.BufferDescription(self._vbo_pos, '3f', ['in_position']),
-                ctx.BufferDescription(self._vbo_col, '4f', ['in_color']),
+                BufferDescription(self._vbo_pos, '3f', ['in_position']),
+                BufferDescription(self._vbo_col, '4f', ['in_color']),
             ],
-            render_count=n,
         )
 
     def render(self, program, mode):
-        self._geometry.render(program, mode=mode)
+        self._geometry.render(program, mode=mode, vertices=self._n)
 
 
 class MatrixStack:
